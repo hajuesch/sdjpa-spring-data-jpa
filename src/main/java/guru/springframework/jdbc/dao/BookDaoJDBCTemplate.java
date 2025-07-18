@@ -1,7 +1,11 @@
 package guru.springframework.jdbc.dao;
 
 import guru.springframework.jdbc.domain.Book;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.jdbc.core.JdbcTemplate;
+
+import java.util.List;
 
 /**
  * Created by jt on 11/25/21.
@@ -11,6 +15,28 @@ public class BookDaoJDBCTemplate implements BookDao {
 
     public BookDaoJDBCTemplate(JdbcTemplate jdbcTemplate) {
         this.jdbcTemplate = jdbcTemplate;
+    }
+
+    @Override
+    public List<Book> findAllSortByTitle(Pageable pageable) {
+        String sql = "SELECT * FROM book ORDER BY title " + pageable.getSort().getOrderFor("title").getDirection().name()
+                + " limit ? offset ?";
+        return jdbcTemplate.query(sql, getBookMapper(), pageable.getPageSize(), pageable.getOffset());
+    }
+
+    @Override
+    public List<Book> findAll(Pageable pageable) {
+        return jdbcTemplate.query("SELECT * FROM book limit ? offset ?", getBookMapper(), pageable.getPageSize(), pageable.getOffset());
+    }
+
+    @Override
+    public List<Book> findAll(int pageSize, int offset) {
+        return jdbcTemplate.query("SELECT * FROM book limit ? offset ?", getBookMapper(), pageSize, offset);
+    }
+
+    @Override
+    public List<Book> findAll() {
+        return jdbcTemplate.query("select * from book", getBookMapper());
     }
 
     @Override
